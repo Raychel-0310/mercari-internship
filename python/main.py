@@ -18,17 +18,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+items = []
 
 @app.get("/")
 def root():
     return {"message": "Hello, world!"}
+# def read_item(item_id: int, q: str = None):
+#     if q:
+#         return {"item_id": item_id, "q": q}
+#     return {"item_id": item_id}
 
 
 @app.post("/items")
-def add_item(name: str = Form(...)):
+def add_item(name: str = Form(...), category: str = Form(...)):
+    item = {"name": name, "category": category}
+    items.append(item)
     logger.info(f"Receive item: {name}")
     return {"message": f"item received: {name}"}
 
+@app.get("/items")
+def get_items():
+    return {"items": items}
 
 @app.get("/image/{image_name}")
 async def get_image(image_name):
