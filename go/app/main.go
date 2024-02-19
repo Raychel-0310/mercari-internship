@@ -118,6 +118,29 @@ func saveItemsToFile(items []item) error {
 	return os.WriteFile("items.json", fileData, 0644)
 }
 
+func loadItemsFromFile() error {
+    // items.json ファイルがあるかどうか
+    if _, err := os.Stat("items.json"); os.IsNotExist(err) {
+        // ファイルが存在しないとき
+        itemList = []item{}
+        return nil
+    }
+
+    // ファイルが存在するとき
+    file, err := os.Open("items.json")
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+
+    decoder := json.NewDecoder(file)
+    err = decoder.Decode(&itemList)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
 // 画像の取得
 func getImg(c echo.Context) error {
 	imgPath := path.Join(ImgDir, c.Param("imageFilename"))
@@ -148,6 +171,12 @@ func getItemDetails(c echo.Context) error {
 
 func main() {
 	e := echo.New()
+
+	// item listの読み込み
+    err := loadItemsFromFile()
+    if err != nil {
+        log.Fatal("Failed to load items from file:", err)
+    }
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
