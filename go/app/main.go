@@ -1,26 +1,24 @@
 package main
 
 import (
-	//"fmt"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path"
-	"strings"
-	"io"
-	"mime/multipart"
 	"path/filepath"
-
-	"encoding/json"
-	"encoding/hex"
-
-	//追加
-	"crypto/sha256"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
+// 画像ファイルを保存
 const (
 	ImgDir = "images"
 )
@@ -29,7 +27,6 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-// ここから追加 商品の定義
 type item struct {
 	Id       int    `json:"id"`
 	Name     string `json:"name"`
@@ -37,125 +34,121 @@ type item struct {
 	Image    string `json:"image"`
 }
 
+// 商品を追加するリスト
 var itemList []item
 
-// SHA256でハッシュ化して画像を保存する関数
-func saveImageAndReturnFileName(file multipart.File) (string, error) {
-    // SHA256でハッシュ化
-    hash := sha256.New()
-    if _, err := io.Copy(hash, file); err != nil {
-        return "", err
-    }
-    fileName := hex.EncodeToString(hash.Sum(nil)) + ".jpg"
+// ハッシュ化して画像を保存
+func saveImage(file multipart.File) (string, error) {
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	fileName := hex.EncodeToString(hash.Sum(nil)) + ".jpg"
 
-    // ファイルポインタをリセット
-    _, err := file.Seek(0, io.SeekStart)
-    if err != nil {
-        return "", err
-    }
+	_, err := file.Seek(0, io.SeekStart)
+	if err != nil {
+		return "", err
+	}
 
-    // ハッシュ値をファイル名として画像を保存
-    filePath := filepath.Join(ImgDir, fileName)
-    dst, err := os.Create(filePath)
-    if err != nil {
-        return "", err
-    }
-    defer dst.Close()
+	filePath := filepath.Join(ImgDir, fileName)
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer dst.Close()
 
-    if _, err = io.Copy(dst, file); err != nil {
-        return "", err
-    }
+	if _, err = io.Copy(dst, file); err != nil {
+		return "", err
+	}
 
-    return fileName, nil
+	return fileName, nil
 }
+
+// 商品のリストの取得
 func getItemList(c echo.Context) error {
-	response := map[string]interface{}{
-		"items": itemList,
-	}
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, map[string]interface{}{"items": itemList})
 }
 
-// ここまで
-
+// root
 func root(c echo.Context) error {
-	res := Response{Message: "Hello, world!"}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, Response{Message: "Hello, world!"})
 }
 
-// アイテムの保存（既存）
+// 商品追加
 func addItem(c echo.Context) error {
-	var newItem item
-	if err := c.Bind(&newItem); err != nil {
-		return err
-	}
-	// Get form data
+	newItem := item{}
 	name := c.FormValue("name")
 	category := c.FormValue("category")
-	c.Logger().Infof("Receive item: %s", name)
-	c.Logger().Infof("Receive item: %s", category)
 
-	// マルチパートフォームデータから画像ファイルを取得
-    fileHeader, err := c.FormFile("image")
-    if err != nil {
-        return err
-    }
-    src, err := fileHeader.Open()
-    if err != nil {
-        return err
-    }
-    defer src.Close()
-
-	// 画像を保存し、ファイル名を取得
-    //fileName, err := saveImageAndReturnFileName(src)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to save image"})
-    }
-
-	//message := fmt.Sprintf("item received: %s", name)
-	//res := Response{Message: message}
-	newItem.Id = len(itemList) + 1
-	itemList = append(itemList, newItem)
-	// 更新されたアイテムリストをJSONファイルに保存
-    //err := saveItemsToFile(itemList)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to save item"})
-    }
-	//return c.JSON(http.StatusOK, res)
-	response := map[string]interface{}{
-		"items": itemList,
+	fileHeader, err := c.FormFile("image")
+	if err != nil {
+		return err
 	}
-	return c.JSON(http.StatusCreated, response)
-	//return c.JSON(http.StatusCreated, map[string][]item{"items": itemList})
+	src, err := fileHeader.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	fileName, err := saveImage(src)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to save image"})
+	}
+
+	newItem.Id = len(itemList) + 1
+	newItem.Image = fileName
+	newItem.Name = name            // 名前
+    newItem.Category = category    // カテゴリ
+	itemList = append(itemList, newItem)
+
+	err = saveItemsToFile(itemList)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to save item list to file"})
+	}
+
+	return c.JSON(http.StatusCreated, map[string]interface{}{"items": itemList})
 }
 
-// アイテムリストをJSONファイルに保存する関数
+// items.json
 func saveItemsToFile(items []item) error {
-    fileData, err := json.Marshal(items)
-    if err != nil {
-        return err
-    }
-    return os.WriteFile("items.json", fileData, 0644)
+	fileData, err := json.Marshal(items)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("items.json", fileData, 0644)
 }
 
+// 画像の取得
 func getImg(c echo.Context) error {
-	// Create image path#
 	imgPath := path.Join(ImgDir, c.Param("imageFilename"))
 
 	if !strings.HasSuffix(imgPath, ".jpg") {
-		res := Response{Message: "Image path does not end with .jpg"}
-		return c.JSON(http.StatusBadRequest, res)
+		return c.JSON(http.StatusBadRequest, Response{Message: "Image path does not end with .jpg"})
 	}
 	if _, err := os.Stat(imgPath); err != nil {
-		c.Logger().Debugf("Image not found: %s", imgPath)
 		imgPath = path.Join(ImgDir, "default.jpg")
 	}
 	return c.File(imgPath)
 }
 
+func getItemDetails(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid item ID"})
+	}
+
+	for _, item := range itemList {
+        if item.Id == id {
+            // 詳細をreturn
+            return c.JSON(http.StatusOK, item)
+        }
+    }
+	return c.JSON(http.StatusNotFound, map[string]string{"error": "Item not found"})
+}
+
 func main() {
 	e := echo.New()
 
-	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Logger.SetLevel(log.INFO)
@@ -169,12 +162,12 @@ func main() {
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 	}))
 
-	// Routes
+	// routing(urlの後がfuncに対応)
 	e.GET("/", root)
 	e.POST("/items", addItem)
 	e.GET("/image/:imageFilename", getImg)
 	e.GET("/items", getItemList)
+	e.GET("/items/:id", getItemDetails)
 
-	// Start server
 	e.Logger.Fatal(e.Start(":9000"))
 }
