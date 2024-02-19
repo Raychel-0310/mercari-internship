@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 商品を登録する空のリスト
+# 商品を登録する空のリストを作成
 items = []
 
 @app.get("/")
