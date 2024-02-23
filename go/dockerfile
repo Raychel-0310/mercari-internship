@@ -14,7 +14,7 @@ RUN go mod tidy
 # -modfile=go/go.mod
 
 # COPY db/ ./db/
-COPY go/ ./無事
+COPY go/ ./
 
 # WORKDIR /app/go
 
