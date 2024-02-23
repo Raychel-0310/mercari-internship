@@ -119,13 +119,16 @@ func saveItemsToFile(items []item) error {
 }
 
 func loadItemsFromFile() error {
-    // items.json ファイルがあるかどうか
-    if _, err := os.Stat("items.json"); os.IsNotExist(err) {
-        // ファイルが存在しないとき
+    _, err := os.Stat("items.json")
+    if err != nil {
+    if os.IsNotExist(err) {
+        // ファイルが存在しない場合の処理
         itemList = []item{}
         return nil
     }
-
+    // ファイルが存在しない以外のエラー（例えば、権限がない等）に対する処理
+    return err
+}
     // ファイルが存在するとき
     file, err := os.Open("items.json")
     if err != nil {
