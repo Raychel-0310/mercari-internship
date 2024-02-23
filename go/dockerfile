@@ -5,25 +5,27 @@ RUN apk add --no-cache gcc musl-dev
 
 WORKDIR /app
 
-COPY go/go.mod ./go/
-COPY go/go.sum ./go/
+COPY go/go.mod go/go.sum ./
 # COPY ../db /db
 
-RUN chown -R trainee:mercari /db
-
+# RUN chown -R trainee:mercari /db
+RUN go mod download
 RUN go mod tidy
+# -modfile=go/go.mod
 
-COPY db/ ./db/
-COPY go/ ./go/
+# COPY db/ ./db/
+COPY go/ ./無事
 
-WORKDIR /app/go
+# WORKDIR /app/go
 
 RUN addgroup -S mercari && adduser -S trainee -G mercari
-RUN go build -o ./mercari-build-training ./app/*.go
+#RUN go build -o ./mercari-build-training
+RUN go build -o mercari-build-training ./app/main.go
+# ./app/*.go
 RUN chown -R trainee:mercari /app
 
 USER trainee
 
 EXPOSE 9000
 
-CMD ["go", "run", "main.go"]
+CMD ["./mercari-build-training"]
