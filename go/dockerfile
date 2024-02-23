@@ -1,6 +1,6 @@
 FROM golang:1.21.7-alpine
 
-# Install gcc and musl-dev
+# gcc and musl-devのインストール
 RUN apk add --no-cache gcc musl-dev
 
 WORKDIR /app
@@ -19,9 +19,7 @@ COPY go/ ./無事
 # WORKDIR /app/go
 
 RUN addgroup -S mercari && adduser -S trainee -G mercari
-#RUN go build -o ./mercari-build-training
 RUN go build -o mercari-build-training ./app/main.go
-# ./app/*.go
 RUN chown -R trainee:mercari /app
 
 USER trainee
