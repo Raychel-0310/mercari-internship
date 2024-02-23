@@ -252,7 +252,7 @@ func searchItems(c echo.Context) error {
     return c.JSON(http.StatusOK, map[string][]item{"items": items})
 }
 
-func initDB() error{
+func initDB() (*sql.DB, error){
     // データベース接続
 	var err error
     db, err = sql.Open("sqlite3", "../../db/mercari.sqlite3")
@@ -270,9 +270,9 @@ func initDB() error{
     );`
     _, err = db.Exec(createTableSQL)
     if err != nil {
-        return err
+        return nil, err
     }
-    return nil
+    return db, nil
 }
 
 func getItems(c echo.Context) error {
@@ -282,7 +282,7 @@ func getItems(c echo.Context) error {
     JOIN categories ON items.category_id = categories.id`
     rows, err := db.Query(query)
     if err != nil {
-        return err // エラーハンドリング
+        return err
     }
     defer rows.Close()
 
@@ -307,12 +307,11 @@ func getItems(c echo.Context) error {
 
     return c.JSON(http.StatusOK, items)
 }
-
 var db *sql.DB
 func main() {
 	e := echo.New()
 	//var err error
-	err := initDB() // initDBの呼び出しでエラーを適切に処理
+	db, err := initDB() // initDBの呼び出しでエラーを適切に処理
     if err != nil {
         log.Fatalf("Failed to initialize the database: %v", err)
     }
