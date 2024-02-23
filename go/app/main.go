@@ -311,8 +311,9 @@ func getItems(c echo.Context) error {
 var db *sql.DB
 func main() {
 	e := echo.New()
+    var err error
 	//var err error
-	err := initDB() // initDBの呼び出しでエラーを適切に処理
+	err = initDB() // initDBの呼び出しでエラーを適切に処理
     if err != nil {
         log.Fatalf("Failed to initialize the database: %v", err)
     }
@@ -323,15 +324,15 @@ func main() {
     //     log.Fatal("",err)
     // }
 	
-	db, err = sql.Open("sqlite3", "../../db/mercari.sqlite3")
-	if err != nil {
-		log.Fatal("database error", err)
-	}
-	defer db.Close()
+	// db, err = sql.Open("sqlite3", "../../db/mercari.sqlite3")
+	// if err != nil {
+	// 	log.Fatal("database error", err)
+	// }
+	// defer db.Close()
 
-	if err = db.Ping(); err != nil {
-		log.Fatal("Failed to connect: ", err)
-	}
+	// if err = db.Ping(); err != nil {
+	// 	log.Fatal("Failed to connect: ", err)
+	// }
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
