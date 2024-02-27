@@ -39,21 +39,6 @@ export const Listing: React.FC<Prop> = (props) => {
       };
       reader.readAsDataURL(file);
     }
-    // setValues({
-    //   ...values, [event.target.name]: event.target.files![0],
-    // })
-
-    // if (event.target.files && event.target.files[0]) {
-    //   const file = event.target.files[0];
-    //   setValues({
-    //     ...values, [event.target.name]: file,
-    //   });
-    //   const reader = new FileReader();
-    //   reader.onloadend = () => {
-    //     setPreview(reader.result as string);
-    //   };
-    //   reader.readAsDataURL(file);
-    // }
   };
   const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -70,25 +55,13 @@ export const Listing: React.FC<Prop> = (props) => {
       if (response.ok) {
         const responseData = await response.json();
   
-        onListingCompleted && onListingCompleted(); // リスト更新のトリガー
+        onListingCompleted && onListingCompleted(); 
       } else {
         console.error('エラー', response.statusText);
       }
     } catch (error) {
       console.error('POST error:', error);
     }
-    // fetch(server.concat('/items'), {
-    //   method: 'POST',
-    //   mode: 'cors',
-    //   body: data,
-    // })
-    //   .then(response => {
-    //     console.log('POST status:', response.statusText);
-    //     onListingCompleted && onListingCompleted();
-    //   })
-    //   .catch((error) => {
-    //     console.error('POST error:', error);
-    //   })
   };
 
   const displaySelectedFile = () => {
@@ -103,7 +76,7 @@ export const Listing: React.FC<Prop> = (props) => {
           <input type='text' name='category' id='category' placeholder='category' onChange={onValueChange} />
           <input type='file' name='image' id='image' onChange={onFileChange} required />
           <button type='submit'>List this item</button>
-          {preview && <img src={preview} alt="Preview" />}
+          {preview && <img src={preview} alt="Preview" className="imagePreview" />}
         </div>
       </form>
     </div>
