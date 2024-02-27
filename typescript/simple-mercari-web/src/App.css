@@ -3,36 +3,52 @@
 }
 
 .Title {
-  background-color: #222427;
-  min-height: 8vh;
+  background-color: #2E294E;
+  /* background-image: url('sunset.jpg'); 背景画像のURLを設定 */
+  min-height: 10vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: left;
-  font-size: calc(10px + 1vmin);
+  font-size: calc(10px + 2vmin);
   color: white;
 }
 
 .Listing {
-  background-color: #222427;
+  /* background-image: url('sunset.jpg'); */
+  background-color: #40355F;
   min-height: 8vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: left;
+  font-size: calc(10px + 1vmin);
+  color: white;
+  padding-top: 20px;
+}
+
+.ItemList {
+  background-image: url('sunset.jpg');
+  /* background-color: #2E294E; */
+  min-height: 8vh;
+  /* display: flex; */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+  /* flex-direction: column; */
+  /* align-items: center;
+  justify-content: left; */
   font-size: calc(10px + 1vmin);
   color: white;
 }
 
-.ItemList {
-  background-color: #222427;
-  min-height: 8vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: left;
-  font-size: calc(10px + 1vmin);
-  color: white;
+.Item img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 8px solid #ffffff;
 }
 
 .App-link {

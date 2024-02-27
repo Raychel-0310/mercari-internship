@@ -4,7 +4,7 @@ interface Item {
   id: number;
   name: string;
   category: string;
-  image_name: string;
+  image: string;
 };
 
 const server = process.env.REACT_APP_API_URL || 'http://127.0.0.1:9000';
@@ -31,12 +31,25 @@ export const ItemList: React.FC<Prop> = (props) => {
       .then(response => response.json())
       .then(data => {
         console.log('GET success:', data);
-        setItems(data.items);
+        setItems(data);
+        // if (data && Array.isArray(data)) {
+        //   setItems(data);
+        // } else if (data && Array.isArray(data.items)) {
+        //   setItems(data.items);
+        // } else {
+        //   console.error('Invalid data format:', data);
+        //   setItems([]); 
+        // }
         onLoadCompleted && onLoadCompleted();
       })
       .catch(error => {
         console.error('GET error:', error)
+        setItems([]); 
       })
+  }
+
+  const getImgSrc = (image: string) => {
+    return image ? `${server}/image/${image}` : placeholderImage;
   }
 
   useEffect(() => {
@@ -46,12 +59,12 @@ export const ItemList: React.FC<Prop> = (props) => {
   }, [reload]);
 
   return (
-    <div>
+    <div className ="ItemList">
+      
       {items.map((item) => {
         return (
-          <div key={item.id} className='ItemList'>
-            {/* TODO: Task 1: Replace the placeholder image with the item image */}
-            <img src={placeholderImage} />
+          <div key={item.id} className='Item'>
+            <img src={getImgSrc(item.image)} alt={item.name} />
             <p>
               <span>Name: {item.name}</span>
               <br />
