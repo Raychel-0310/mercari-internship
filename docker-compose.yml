@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: go/Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      FRONT_URL: http://localhost:3000
+    working_dir: /app
+    # volumes:
+    #   - ./db:/app/db
+    volumes:
+      - ./db/mercari.sqlite3:/app/db/mercari.sqlite3
+
+
+  web:
+    build:
+      context: ./typescript/simple-mercari-web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://api:9000
+      working_dir: /web
+    # volumes:
+
