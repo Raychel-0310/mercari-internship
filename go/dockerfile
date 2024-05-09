@@ -13,13 +13,7 @@ CMD ["go", "version"]
 
 # WORKDIR /app
 
-# COPY go/dockerfile ./
-# COPY go/go.mod ./go/
-# COPY go/go.sum ./go/
-# COPY go/main.go ./go/
-
-# # COPY go.mod go.sum ./
-# #COPY go/go.mod go/go.sum ./
+# COPY go/go.mod go/go.sum ./
 # # COPY ../db /db
 
 # # RUN chown -R trainee:mercari /db
@@ -28,9 +22,7 @@ CMD ["go", "version"]
 # # -modfile=go/go.mod
 
 # # COPY db/ ./db/
-# #COPY go/ ./
-# COPY go/* ./
-
+# COPY go/ ./
 
 # # WORKDIR /app/go
 
