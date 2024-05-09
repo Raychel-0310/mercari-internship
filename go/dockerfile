@@ -1,29 +1,37 @@
-FROM golang:1.21.7-alpine
-
-# gcc and musl-devのインストール
-RUN apk add --no-cache gcc musl-dev
-
-WORKDIR /app
-
-COPY go/go.mod go/go.sum ./
-# COPY ../db /db
-
-# RUN chown -R trainee:mercari /db
-RUN go mod download
-RUN go mod tidy
-# -modfile=go/go.mod
-
-# COPY db/ ./db/
-COPY go/ ./
-
-# WORKDIR /app/go
+FROM alpine
 
 RUN addgroup -S mercari && adduser -S trainee -G mercari
-RUN go build -o mercari-build-training ./app/main.go
-RUN chown -R trainee:mercari /app
+# RUN chown -R trainee:mercari /path/to/db
 
 USER trainee
 
-EXPOSE 9000
+CMD ["go", "version"]
+# FROM golang:1.21.7-alpine
 
-CMD ["./mercari-build-training"]
+# # gcc and musl-devのインストール
+# RUN apk add --no-cache gcc musl-dev
+
+# WORKDIR /app
+
+# COPY go/go.mod go/go.sum ./
+# # COPY ../db /db
+
+# # RUN chown -R trainee:mercari /db
+# RUN go mod download
+# RUN go mod tidy
+# # -modfile=go/go.mod
+
+# # COPY db/ ./db/
+# COPY go/ ./
+
+# # WORKDIR /app/go
+
+# RUN addgroup -S mercari && adduser -S trainee -G mercari
+# RUN go build -o mercari-build-training ./app/main.go
+# RUN chown -R trainee:mercari /app
+
+# USER trainee
+
+# EXPOSE 9000
+
+# CMD ["./mercari-build-training"]
